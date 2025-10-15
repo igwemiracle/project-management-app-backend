@@ -1,0 +1,5 @@
+node_modules/
+hold4me/
+.env
+.vscode/
+src/rest-client-apis/
