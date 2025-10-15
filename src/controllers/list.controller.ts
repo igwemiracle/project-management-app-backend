@@ -35,7 +35,7 @@ export const GetListsByBoard = async (req: Request, res: Response) => {
     const { boardId } = req.params;
 
     const lists = await List.find({ board: boardId })
-    // .populate("cards");
+      .populate("cards");
 
     res.status(200).json({ lists });
   } catch (error) {

@@ -7,7 +7,6 @@ export const GetAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find({ role: "user" })
       .select("-password")
-      .populate('boards');
 
     res.status(200).json({ users });
   } catch (error) {
@@ -19,7 +18,6 @@ export const GetAllUsers = async (req: Request, res: Response) => {
 export const GetSingleUser = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
-    console.log("Params ====> userId: ", userId);
 
     // Only the user themselves or an admin can view
     if (req.user?.id !== userId && req.user?.role !== "admin") {

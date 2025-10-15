@@ -7,7 +7,9 @@ import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import boardRoutes from "./routes/board.routes";
 import listRoutes from "./routes/list.routes";
-
+import cardRoutes from "./routes/card.routes"
+import commentRoutes from "./routes/comment.routes";
+import workspaceRoutes from "./routes/workspace.routes";
 
 dotenv.config();
 connectDB();
@@ -23,6 +25,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/board", boardRoutes);
 app.use("/api/lists", listRoutes);
-
+app.use("/api/card", cardRoutes);
+app.use("/api/comments", commentRoutes);
+app.use("/api/workspaces", workspaceRoutes)
 
 export default app;
