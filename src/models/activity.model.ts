@@ -1,23 +1,32 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface IActivity extends Document {
+export interface IActivityLog extends Document {
   user: mongoose.Types.ObjectId;
-  action: string;
+  workspace?: mongoose.Types.ObjectId;
   board?: mongoose.Types.ObjectId;
-  card?: mongoose.Types.ObjectId;
-  list?: mongoose.Types.ObjectId;
+  entityType: "Workspace" | "Board" | "List" | "Card" | "Comment";
+  entityName?: string;
+  action: string;
   createdAt: Date;
 }
 
-const ActivitySchema = new Schema<IActivity>(
+const ActivityLogSchema = new Schema<IActivityLog>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    action: { type: String, required: true },
+    workspace: { type: Schema.Types.ObjectId, ref: "Workspace" },
     board: { type: Schema.Types.ObjectId, ref: "Board" },
-    card: { type: Schema.Types.ObjectId, ref: "Card" },
-    list: { type: Schema.Types.ObjectId, ref: "List" },
+    entityType: {
+      type: String,
+      enum: ["Workspace", "Board", "List", "Card", "Comment"],
+      required: true,
+    },
+    entityName: { type: String },
+    action: { type: String, required: true },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-export default mongoose.model<IActivity>("Activity", ActivitySchema);
+export const ActivityLog = mongoose.model<IActivityLog>(
+  "ActivityLog",
+  ActivityLogSchema
+);

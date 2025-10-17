@@ -29,7 +29,7 @@ export const GetWorkspaces = async (req: Request, res: Response) => {
     const workspaces = await Workspace.find({
       "members.user": req.user?.id,
     }).populate("members.user", "name email")
-      .populate("boards");;
+      .populate("boards");
 
     res.status(200).json({ workspaces });
   } catch (error) {

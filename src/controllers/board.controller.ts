@@ -1,26 +1,52 @@
 import { Board } from "../models/board.model";
 import { Request, Response } from "express";
+import { Workspace } from "../models/workspace.model";
+import { logActivity } from "../utils/logActivity";
 
-// ✅ CREATE NEW BOARD (Authenticated)
+
 export const CreateBoard = async (req: Request, res: Response) => {
   try {
-    const { title, description } = req.body;
-    if (!title) {
-      return res.status(400).json({ message: "Title is required" });
+    const { title, description, workspaceId } = req.body;
+
+    if (!title || !workspaceId) {
+      return res.status(400).json({ message: "Title and workspaceId are required" });
     }
+
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
     const newBoard = new Board({
       title,
       description,
-      createdBy: req.user?.id, // req.user is available from authMiddleware
+      createdBy: req.user?.id,
+      workspace: workspaceId,
       lists: [],
     });
-    await newBoard.save();
-    res.status(201).json({ board: newBoard });
 
+    await newBoard.save();
+
+    // Log the action automatically
+    await logActivity({
+      userId: req.user!.id,
+      workspaceId,
+      entityType: "Board",
+      entityName: title,
+      actionType: "create",
+    });
+
+    // Push the board into the workspace
+    workspace.boards.push(newBoard._id as import("mongoose").Types.ObjectId);
+    await workspace.save();
+
+    res.status(201).json({ board: newBoard });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
-}
+};
+
+
 
 // ✅ GET ALL BOARDS FOR AUTHENTICATED USER
 export const GetBoards = async (req: Request, res: Response) => {
@@ -55,56 +81,75 @@ export const GetBoardById = async (req: Request, res: Response) => {
   }
 }
 
-// UPDATE BOARD (Authenticated)
 export const UpdateBoard = async (req: Request, res: Response) => {
   try {
     const { title, description } = req.body;
     const boardId = req.params.id;
-    const board = await Board.findById(boardId);
 
-    //to check if board exists
+    const board = await Board.findById(boardId);
     if (!board) {
       return res.status(404).json({ message: "Board not found" });
     }
 
-    // Ensure the board belongs to the logged-in user
     if (board.createdBy.toString() !== req.user?.id) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    // Update fields if provided
     if (title) board.title = title;
     if (description) board.description = description;
 
-    // Save the updated board
-    await board.save();
-    res.status(200).json({ board });
+    const updatedBoard = await board.save();
 
+    // ✅ Convert ObjectId to string to match type
+    await logActivity({
+      userId: req.user!.id,
+      workspaceId: board.workspace.toString(),
+      entityType: "Board",
+      entityName: updatedBoard.title,
+      actionType: "update",
+      details: `Updated Board: "${updatedBoard.title}"`,
+    });
+
+    res.status(200).json({
+      message: "Board updated successfully",
+      board: updatedBoard,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
-}
+};
+
+
 
 // DELETE BOARD (Authenticated)
 export const DeleteBoard = async (req: Request, res: Response) => {
   try {
     const boardId = req.params.id;
-    const board = await Board.findById(boardId);
 
-    //to check if board exists
+    const board = await Board.findById(boardId);
     if (!board) {
       return res.status(404).json({ message: "Board not found" });
     }
 
-    // Ensure the board belongs to the logged-in user
+    // Ensure user owns the board
     if (board.createdBy.toString() !== req.user?.id) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    await Board.findByIdAndDelete(boardId);
-    res.status(200).json({ message: "Board deleted successfully" });
+    await board.deleteOne();
 
+    // Log activity
+    await logActivity({
+      userId: req.user!.id,
+      workspaceId: board.workspace.toString(),
+      entityType: "Board",
+      entityName: board.title,
+      actionType: "delete",
+      details: `Deleted Board: "${board.title}"`,
+    });
+
+    res.status(200).json({ message: "Board deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
-}
+};

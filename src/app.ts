@@ -10,6 +10,9 @@ import listRoutes from "./routes/list.routes";
 import cardRoutes from "./routes/card.routes"
 import commentRoutes from "./routes/comment.routes";
 import workspaceRoutes from "./routes/workspace.routes";
+import activityRoutes from "./routes/activity.routes";
+
+
 
 dotenv.config();
 connectDB();
@@ -28,5 +31,6 @@ app.use("/api/lists", listRoutes);
 app.use("/api/card", cardRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/workspaces", workspaceRoutes)
+app.use("/api/activities", activityRoutes);
 
 export default app;

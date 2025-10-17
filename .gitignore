@@ -3,3 +3,4 @@ hold4me/
 .env
 .vscode/
 src/rest-client-apis/
+docs/

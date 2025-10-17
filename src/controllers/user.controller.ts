@@ -24,7 +24,8 @@ export const GetSingleUser = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Not authorized to view this user" });
     }
 
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId)
+      .select("-password")
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
