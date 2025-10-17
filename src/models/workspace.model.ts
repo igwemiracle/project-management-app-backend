@@ -1,9 +1,11 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IWorkspace extends Document {
+  _id: mongoose.Types.ObjectId;
   name: string;
   description?: string;
   createdBy: mongoose.Types.ObjectId;
+  isPrivate: boolean;
   members: {
     user: mongoose.Types.ObjectId;
     role: "admin" | "member" | "viewer";
@@ -23,6 +25,8 @@ const WorkspaceSchema = new Schema<IWorkspace>(
       },
     ],
     boards: [{ type: Schema.Types.ObjectId, ref: "Board" }],
+    isPrivate: { type: Boolean, default: true }
+
   },
   { timestamps: true }
 );
