@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface ICard extends Document {
   title: string;
   description?: string;
+  board: mongoose.Types.ObjectId;
   list: mongoose.Types.ObjectId;
   assignedTo?: mongoose.Types.ObjectId;
   comments: mongoose.Types.ObjectId[];

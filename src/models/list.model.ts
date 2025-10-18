@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IList extends Document {
+  _id: mongoose.Types.ObjectId;
   title: string;
   board: mongoose.Types.ObjectId;
   cards: mongoose.Types.ObjectId[];
