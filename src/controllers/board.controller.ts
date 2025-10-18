@@ -27,6 +27,10 @@ export const CreateBoard = async (req: Request, res: Response) => {
 
     await newBoard.save();
 
+    // Notify members in the workspace about the new board
+    const io = req.app.get("io");
+    io.to(workspaceId).emit("boardCreated", { workspaceId, board: newBoard });
+
     // Log the action automatically
     await logActivity({
       userId: req.user!.id,
@@ -45,8 +49,6 @@ export const CreateBoard = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
-
 
 // ✅ GET ALL BOARDS FOR AUTHENTICATED USER
 export const GetBoards = async (req: Request, res: Response) => {
@@ -100,6 +102,11 @@ export const UpdateBoard = async (req: Request, res: Response) => {
 
     const updatedBoard = await board.save();
 
+    // Notify members in the workspace about the updated board
+    const io = req.app.get("io");
+    io.to(board.workspace.toString()).emit("boardUpdated",
+      { workspaceId: board.workspace.toString(), board: updatedBoard });
+
     // ✅ Convert ObjectId to string to match type
     await logActivity({
       userId: req.user!.id,
@@ -119,8 +126,6 @@ export const UpdateBoard = async (req: Request, res: Response) => {
   }
 };
 
-
-
 // DELETE BOARD (Authenticated)
 export const DeleteBoard = async (req: Request, res: Response) => {
   try {
@@ -137,6 +142,11 @@ export const DeleteBoard = async (req: Request, res: Response) => {
     }
 
     await board.deleteOne();
+
+    // Notify members in the workspace about the deleted board
+    const io = req.app.get("io");
+    io.to(board.workspace.toString()).emit("boardDeleted",
+      { workspaceId: board.workspace.toString(), boardId: board._id.toString() });
 
     // Log activity
     await logActivity({

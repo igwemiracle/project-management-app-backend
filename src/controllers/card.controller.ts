@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { Card } from "../models/card.model";
 import { List } from "../models/list.model";
 import { logActivity } from "../utils/logActivity";
+import { io } from "../server";
+import { Workspace } from "../models/workspace.model";
+import { Board } from "../models/board.model";
 
 
 // ✅ Create a new card
@@ -18,7 +21,15 @@ export const CreateCard = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "List not found" });
     }
 
-    const boardId = list.board.toString();
+    const board = await Board.findById(list.board);
+    if (!board) {
+      return res.status(404).json({ message: "Board not found" });
+    }
+
+    const workspace = await Workspace.findById(board.workspace);
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
 
     const newCard = new Card({
       title,
@@ -35,16 +46,20 @@ export const CreateCard = async (req: Request, res: Response) => {
     // ✅ Log activity
     await logActivity({
       userId: req.user!.id,
-      boardId,
+      workspaceId: board.workspace.toString(),
+      boardId: board._id.toString(),
       entityType: "Card",
       entityName: title,
       actionType: "create",
       details: `Created Card: "${title}"`,
     });
 
+    // ✅ Emit to only workspace members
+    io.to(workspace._id.toString()).emit("cardCreated", newCard);
+
     res.status(201).json({ card: newCard });
   } catch (error) {
-    console.error("Error creating card:", error);
+    console.error("❌ Error creating card:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
@@ -61,30 +76,40 @@ export const UpdateCard = async (req: Request, res: Response) => {
       { new: true }
     );
 
-    if (!updatedCard)
+    if (!updatedCard) {
       return res.status(404).json({ message: "Card not found" });
+    }
 
     const list = await List.findById(updatedCard.list);
-    const boardId = list?.board.toString() ?? "";
+    if (!list) return res.status(404).json({ message: "List not found" });
+
+    const board = await Board.findById(list.board);
+    if (!board) return res.status(404).json({ message: "Board not found" });
+
+    const workspace = await Workspace.findById(board.workspace);
+    if (!workspace) return res.status(404).json({ message: "Workspace not found" });
 
     // ✅ Log activity
     await logActivity({
       userId: req.user!.id,
-      boardId,
+      workspaceId: board.workspace.toString(),
+      boardId: board._id.toString(),
       entityType: "Card",
       entityName: updatedCard.title,
       actionType: "update",
       details: `Updated Card: "${updatedCard.title}"`,
     });
 
+    // ✅ Emit to only workspace members
+    io.to(workspace._id.toString()).emit("cardUpdated", updatedCard);
+
     res.status(200).json({ card: updatedCard });
   } catch (error) {
-    console.error("Error updating card:", error);
+    console.error("❌ Error updating card:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
-// ✅ Delete a card
 // ✅ Delete a card
 export const DeleteCard = async (req: Request, res: Response) => {
   try {
@@ -94,33 +119,42 @@ export const DeleteCard = async (req: Request, res: Response) => {
     if (!card) return res.status(404).json({ message: "Card not found" });
 
     const list = await List.findById(card.list);
-    const boardId = list?.board ? list.board.toString() : null;
+    if (!list) return res.status(404).json({ message: "List not found" });
 
-    // Remove card reference from the list
+    const board = await Board.findById(list.board);
+    if (!board) return res.status(404).json({ message: "Board not found" });
+
+    const workspace = await Workspace.findById(board.workspace);
+    if (!workspace) return res.status(404).json({ message: "Workspace not found" });
+
+    // Remove card reference from list
     await List.findByIdAndUpdate(card.list, { $pull: { cards: card._id } });
 
     await card.deleteOne();
 
-    // ✅ Only log if we have a valid boardId
-    if (boardId) {
-      await logActivity({
-        userId: req.user!.id,
-        boardId,
-        entityType: "Card",
-        entityName: card.title,
-        actionType: "delete",
-      });
-    } else {
-      console.warn("⚠️ Skipping activity log: boardId not found for deleted card");
-    }
+    // ✅ Log activity
+    await logActivity({
+      userId: req.user!.id,
+      workspaceId: board.workspace.toString(),
+      boardId: board._id.toString(),
+      entityType: "Card",
+      entityName: card.title,
+      actionType: "delete",
+      details: `Deleted Card: "${card.title}"`,
+    });
+
+    // ✅ Emit to only workspace members
+    io.to(workspace._id.toString()).emit("cardDeleted", {
+      cardId: card._id,
+      listId: list._id,
+    });
 
     res.status(200).json({ message: "Card deleted successfully" });
   } catch (error) {
-    console.error("Error deleting card:", error);
+    console.error("❌ Error deleting card:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 
 // ✅ Get all cards in a list
