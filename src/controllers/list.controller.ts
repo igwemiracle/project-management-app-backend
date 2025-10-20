@@ -13,35 +13,36 @@ export const CreateList = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Title and Board ID are required" });
     }
 
-    // Step 1: Find the board
     const board = await Board.findById(boardId);
     if (!board) {
       return res.status(404).json({ message: "Board not found" });
     }
 
-    // Step 2: Create new list
+    // ✅ Determine position: one more than the number of existing lists
+    const existingLists = await List.find({ board: boardId });
+    const position = existingLists.length;
+
     const newList = new List({
       title,
       board: boardId,
       cards: [],
+      position, // ✅ Assign position
       createdAt: new Date(),
     });
+
     await newList.save();
 
-    // ✅ Emit to all members in that workspace
-    io.to(board.workspace.toString()).emit("listCreated", newList);
-
-    // Step 3: Add to board’s lists
     await Board.findByIdAndUpdate(boardId, { $push: { lists: newList._id } });
 
-    // Step 4: Log the action with correct workspace
+    io.to(board.workspace.toString()).emit("listCreated", newList);
+
     await logActivity({
       userId: req.user!.id,
-      workspaceId: board.workspace.toString(), // ✅ Correct workspace reference
+      workspaceId: board.workspace.toString(),
       entityType: "List",
       entityName: title,
       actionType: "create",
-      details: `Created List: "${title}"`,
+      details: `Created List: "${title}" at position ${position}`,
     });
 
     res.status(201).json({ list: newList });
@@ -135,29 +136,53 @@ export const DeleteList = async (req: Request, res: Response) => {
   }
 };
 
-
-// ✅ GET ALL LISTS FOR A BOARD
-export const GetListsByBoard = async (req: Request, res: Response) => {
+export const GetAllLists = async (req: Request, res: Response) => {
   try {
-    // 
-    const { boardId } = req.params;
-
-    const lists = await List.find({ board: boardId })
-      .populate("cards");
-
-    // Verify board exists for authorization
-    const board = await Board.findById(boardId);
-    if (!board) {
-      return res.status(404).json({ message: "Board not found" });
-    }
-
-    // Ensure lists belong to the logged in user's board
-    if (board.createdBy.toString() !== req.user?.id) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
+    const lists = await List.find({ owner: req.user?.id },)
 
     res.status(200).json({ lists });
   } catch (error) {
+    console.error("Error fetching lists:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const GetListsByBoard = async (req: Request, res: Response) => {
+  try {
+    const boardId = (req.query.board || req.query.boardId) as string;
+
+    if (!boardId) {
+      return res.status(400).json({ message: "Board ID is required" });
+    }
+
+    const lists = await List.find({ board: boardId })
+      .populate("cards")
+      .sort({ position: 1 }); // ✅ Order by position ascending
+
+    res.status(200).json({ lists });
+  } catch (error) {
+    console.error("Error fetching lists:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const ReorderLists = async (req: Request, res: Response) => {
+  try {
+    const { boardId, orderedListIds } = req.body; // e.g. ["list1", "list2", "list3"]
+
+    if (!boardId || !orderedListIds || !Array.isArray(orderedListIds)) {
+      return res.status(400).json({ message: "boardId and orderedListIds are required" });
+    }
+
+    const updates = orderedListIds.map((id, index) =>
+      List.findByIdAndUpdate(id, { position: index })
+    );
+
+    await Promise.all(updates);
+
+    res.status(200).json({ message: "Lists reordered successfully" });
+  } catch (error) {
+    console.error("Error reordering lists:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };

@@ -4,3 +4,4 @@ hold4me/
 .vscode/
 src/rest-client-apis/
 docs/
+src/test-sockets/

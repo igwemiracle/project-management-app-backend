@@ -6,7 +6,7 @@ import { logActivity } from "../utils/logActivity";
 
 export const CreateBoard = async (req: Request, res: Response) => {
   try {
-    const { title, description, workspaceId } = req.body;
+    const { title, description, workspaceId, color } = req.body;
 
     if (!title || !workspaceId) {
       return res.status(400).json({ message: "Title and workspaceId are required" });
@@ -20,6 +20,7 @@ export const CreateBoard = async (req: Request, res: Response) => {
     const newBoard = new Board({
       title,
       description,
+      color,
       createdBy: req.user?.id,
       workspace: workspaceId,
       lists: [],
@@ -53,14 +54,24 @@ export const CreateBoard = async (req: Request, res: Response) => {
 // ✅ GET ALL BOARDS FOR AUTHENTICATED USER
 export const GetBoards = async (req: Request, res: Response) => {
   try {
-    const boards = await Board.find({ createdBy: req.user?.id })
-      .populate("lists")
+    const { workspace } = req.query;
+
+    // Base query: user must own the boards
+    const query: any = { createdBy: req.user?.id };
+
+    // If a workspaceId is provided, filter by it
+    if (workspace) {
+      query.workspace = workspace;
+    }
+
+    const boards = await Board.find(query).populate("lists");
+
     res.status(200).json({ boards });
   } catch (error) {
+    console.error("Error fetching boards:", error);
     res.status(500).json({ message: "Server error", error });
   }
-}
-
+};
 // GET SINGLE BOARD BY ID (Authenticated)
 export const GetBoardById = async (req: Request, res: Response) => {
   try {

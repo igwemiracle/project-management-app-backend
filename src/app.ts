@@ -12,13 +12,15 @@ import commentRoutes from "./routes/comment.routes";
 import workspaceRoutes from "./routes/workspace.routes";
 import activityRoutes from "./routes/activity.routes";
 
-
-
 dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -26,11 +28,11 @@ app.use(cookieParser());
 /* Routers */
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/board", boardRoutes);
+app.use("/api/boards", boardRoutes);
 app.use("/api/lists", listRoutes);
-app.use("/api/card", cardRoutes);
+app.use("/api/cards", cardRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/workspaces", workspaceRoutes)
-app.use("/api/activities", activityRoutes);
+app.use("/api/activity-logs", activityRoutes);
 
 export default app;

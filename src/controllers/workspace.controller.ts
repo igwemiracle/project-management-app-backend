@@ -33,12 +33,30 @@ export const CreateWorkspace = async (req: Request, res: Response) => {
 
 
 // ✅ GET ALL WORKSPACES FOR USER
+// export const GetWorkspaces = async (req: Request, res: Response) => {
+//   try {
+//     const workspaces = await Workspace.find({
+//       "members.user": req.user?.id,
+//     }).populate("members.user", "name email")
+//       .populate("boards");
+
+//     res.status(200).json({ workspaces });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
+
 export const GetWorkspaces = async (req: Request, res: Response) => {
   try {
     const workspaces = await Workspace.find({
-      "members.user": req.user?.id,
-    }).populate("members.user", "name email")
+      $or: [
+        { owner: req.user?.id },
+        { "members.user": req.user?.id }
+      ]
+    })
+      .populate("members.user", "name email")
       .populate("boards");
+
 
     res.status(200).json({ workspaces });
   } catch (error) {

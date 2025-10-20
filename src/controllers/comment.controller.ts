@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { Comment } from "../models/comment.model";
 import { Card } from "../models/card.model";
 import { Workspace } from "../models/workspace.model";
-import { Board } from "../models/board.model";
 import { List } from "../models/list.model";
 
 // ✅ Create a comment
