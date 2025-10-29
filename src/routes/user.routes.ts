@@ -10,8 +10,14 @@ router.get("/", authenticateUser, authorizeRoles("admin"), GetAllUsers);
 router.get("/profile", authenticateUser, GetProfile);
 
 router.get("/showMe", authenticateUser, ShowCurrentUser);
+// router.get("/owned-accounts", authenticateUser, getOwnedAccounts);
+// router.get("/:ownerId/owned-accounts", getPublicOwnedAccounts);
+// router.post("/switch/:accountId", authenticateUser, switchAccount);
+
+// router.post("/subaccounts", authenticateUser, createSubAccount);
+
 router.get("/:id", authenticateUser, GetSingleUser);
 router.delete("/:id", authenticateUser, authorizePermissions("admin"), DeleteUser);
-
+// router.delete("/sub-accounts/:id", authenticateUser, removeSubAccount)
 
 export default router;

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { User } from "../models/user.model";
 
 interface TokenPayload {
   userId: string;
@@ -14,7 +15,7 @@ declare global {
   }
 }
 
-export const authenticateUser = (
+export const authenticateUser = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -26,14 +27,21 @@ export const authenticateUser = (
   }
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as TokenPayload;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as TokenPayload;
 
-    req.user = { id: decoded.userId, role: decoded.role };
+    // ✅ Fetch user from DB to check verification
+    const user = await User.findById(decoded.userId);
+    if (!user) return res.status(401).json({ message: "Authentication invalid" });
+
+    // ✅ Check if email is verified
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Please verify your email before accessing this resource." });
+    }
+
+    req.user = { id: user._id.toString(), role: user.role };
     next();
   } catch (error) {
     return res.status(401).json({ message: "Authentication invalid" });
   }
 };
+

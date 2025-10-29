@@ -6,7 +6,7 @@ import { logActivity } from "../utils/logActivity";
 //✅ CREATE A NEW LIST
 export const CreateList = async (req: Request, res: Response) => {
   try {
-    const { title, boardId } = req.body;
+    const { title, boardId, color } = req.body;
     const io = req.app.get("io");
 
     if (!title || !boardId) {
@@ -26,6 +26,7 @@ export const CreateList = async (req: Request, res: Response) => {
       title,
       board: boardId,
       cards: [],
+      color: color || null,
       position, // ✅ Assign position
       createdAt: new Date(),
     });
@@ -91,6 +92,31 @@ export const UpdateList = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+// ✅ UPDATE ALL LIST COLOR
+export const UpdateListColor = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, position, color } = req.body;
+
+    const list = await List.findById(id);
+    if (!list) {
+      return res.status(404).json({ message: "List not found" });
+    }
+
+    if (title !== undefined) list.title = title;
+    if (position !== undefined) list.position = position;
+    if (color !== undefined) list.color = color;
+
+    await list.save();
+
+    res.status(200).json({ list });
+  } catch (error) {
+    console.error("Error updating list:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 
 // ✅ Delete a list
 export const DeleteList = async (req: Request, res: Response) => {

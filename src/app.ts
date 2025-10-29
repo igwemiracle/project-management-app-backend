@@ -11,6 +11,7 @@ import cardRoutes from "./routes/card.routes"
 import commentRoutes from "./routes/comment.routes";
 import workspaceRoutes from "./routes/workspace.routes";
 import activityRoutes from "./routes/activity.routes";
+import accountRoutes from "./routes/account.routes";
 
 dotenv.config();
 connectDB();
@@ -27,6 +28,7 @@ app.use(cookieParser());
 
 /* Routers */
 app.use("/api/auth", authRoutes);
+app.use("/api/account", accountRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/lists", listRoutes);
