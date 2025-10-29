@@ -7,22 +7,52 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
+    /* Environment Settings */
     "module": "commonjs",
-    "target": "ES6",
-    "types": [],
+    "target": "ES2020", // ✅ Better async/await & modern syntax support
+    "lib": ["ES2020"], // ✅ Needed for Node features
+    "types": ["node"],
+
+    // ============================
+    // "module": "commonjs",
+    // "target": "ES6",
+    // "types": [],
+    // ============================
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
     // and npm install -D @types/node
 
-    // Other Outputs
+    // ========================
+    // Output Option
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false, // ✅ No need for declaration files on server deploy
+    "declarationMap": false,
 
+    // ========================
+    // Other Outputs
+    // "sourceMap": true,
+    // "declaration": true,
+    // "declarationMap": true,
+    // ========================
+
+    /* Type Checking */
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": false, // ✅ Allows TS to compile multiple modules properly
+    "moduleDetection": "force",
+
+    // ========================
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": false,
+    // "isolatedModules": true,
+    // "strict": true,
+    // "moduleDetection": "force",
+    // "skipLibCheck": true,
+    // "esModuleInterop": true,
+    // ========================================================================
 
     // Style Options
     // "noImplicitReturns": true,
@@ -33,14 +63,14 @@
     // "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
-    "strict": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": false,
-    "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
-    "esModuleInterop": true,
+    // "typeRoots": ["./src/types", "./node_modules/@types"],
+
+    /* Paths */
     "typeRoots": ["./src/types", "./node_modules/@types"]
-  }
+  },
+  "include": ["src"], // ✅ Only compile the source folder
+  "exclude": ["node_modules", "dist"]
 }
