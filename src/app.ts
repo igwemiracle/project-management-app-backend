@@ -18,13 +18,12 @@ connectDB();
 
 const app = express();
 app.use(cors({
-  origin: ["http://localhost:5173", "https://project-management-app-orpin-delta.vercel.app"],
+  origin: ["http://localhost:5173", "https://project-management-bgsurbsfw-igwe-miracles-projects.vercel.app"],
   credentials: true
 }));
 
 app.use(express.json());
 app.use(cookieParser());
-
 
 /* Routers */
 app.use("/api/auth", authRoutes);
