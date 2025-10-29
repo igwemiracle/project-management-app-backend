@@ -17,10 +17,27 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://project-management-bgsurbsfw-igwe-miracles-projects.vercel.app",
+  "https://project-management-app-orpin-delta.vercel.app",
+  "https://project-management-app-git-main-igwe-miracles-projects.vercel.app"
+];
+
 app.use(cors({
-  origin: ["http://localhost:5173", "https://project-management-bgsurbsfw-igwe-miracles-projects.vercel.app"],
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked: ${origin}`);
+      callback(new Error("Not allowed by CORS"), false);
+    }
+  },
+  credentials: true,
 }));
+
 
 app.use(express.json());
 app.use(cookieParser());
