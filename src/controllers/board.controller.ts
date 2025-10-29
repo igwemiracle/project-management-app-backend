@@ -6,7 +6,7 @@ import { logActivity } from "../utils/logActivity";
 
 export const CreateBoard = async (req: Request, res: Response) => {
   try {
-    const { title, description, workspaceId } = req.body;
+    const { title, description, workspaceId, color } = req.body;
 
     if (!title || !workspaceId) {
       return res.status(400).json({ message: "Title and workspaceId are required" });
@@ -20,12 +20,17 @@ export const CreateBoard = async (req: Request, res: Response) => {
     const newBoard = new Board({
       title,
       description,
+      color,
       createdBy: req.user?.id,
       workspace: workspaceId,
       lists: [],
     });
 
     await newBoard.save();
+
+    // Notify members in the workspace about the new board
+    const io = req.app.get("io");
+    io.to(workspaceId).emit("boardCreated", { workspaceId, board: newBoard });
 
     // Log the action automatically
     await logActivity({
@@ -46,19 +51,27 @@ export const CreateBoard = async (req: Request, res: Response) => {
   }
 };
 
-
-
 // ✅ GET ALL BOARDS FOR AUTHENTICATED USER
 export const GetBoards = async (req: Request, res: Response) => {
   try {
-    const boards = await Board.find({ createdBy: req.user?.id })
-      .populate("lists")
+    const { workspace } = req.query;
+
+    // Base query: user must own the boards
+    const query: any = { createdBy: req.user?.id };
+
+    // If a workspaceId is provided, filter by it
+    if (workspace) {
+      query.workspace = workspace;
+    }
+
+    const boards = await Board.find(query).populate("lists");
+
     res.status(200).json({ boards });
   } catch (error) {
+    console.error("Error fetching boards:", error);
     res.status(500).json({ message: "Server error", error });
   }
-}
-
+};
 // GET SINGLE BOARD BY ID (Authenticated)
 export const GetBoardById = async (req: Request, res: Response) => {
   try {
@@ -100,6 +113,11 @@ export const UpdateBoard = async (req: Request, res: Response) => {
 
     const updatedBoard = await board.save();
 
+    // Notify members in the workspace about the updated board
+    const io = req.app.get("io");
+    io.to(board.workspace.toString()).emit("boardUpdated",
+      { workspaceId: board.workspace.toString(), board: updatedBoard });
+
     // ✅ Convert ObjectId to string to match type
     await logActivity({
       userId: req.user!.id,
@@ -119,8 +137,6 @@ export const UpdateBoard = async (req: Request, res: Response) => {
   }
 };
 
-
-
 // DELETE BOARD (Authenticated)
 export const DeleteBoard = async (req: Request, res: Response) => {
   try {
@@ -137,6 +153,11 @@ export const DeleteBoard = async (req: Request, res: Response) => {
     }
 
     await board.deleteOne();
+
+    // Notify members in the workspace about the deleted board
+    const io = req.app.get("io");
+    io.to(board.workspace.toString()).emit("boardDeleted",
+      { workspaceId: board.workspace.toString(), boardId: board._id.toString() });
 
     // Log activity
     await logActivity({

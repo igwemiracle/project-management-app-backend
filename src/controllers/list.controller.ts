@@ -6,38 +6,44 @@ import { logActivity } from "../utils/logActivity";
 //✅ CREATE A NEW LIST
 export const CreateList = async (req: Request, res: Response) => {
   try {
-    const { title, boardId } = req.body;
+    const { title, boardId, color } = req.body;
+    const io = req.app.get("io");
 
     if (!title || !boardId) {
       return res.status(400).json({ message: "Title and Board ID are required" });
     }
 
-    // Step 1: Find the board
     const board = await Board.findById(boardId);
     if (!board) {
       return res.status(404).json({ message: "Board not found" });
     }
 
-    // Step 2: Create new list
+    // ✅ Determine position: one more than the number of existing lists
+    const existingLists = await List.find({ board: boardId });
+    const position = existingLists.length;
+
     const newList = new List({
       title,
       board: boardId,
       cards: [],
+      color: color || null,
+      position, // ✅ Assign position
       createdAt: new Date(),
     });
+
     await newList.save();
 
-    // Step 3: Add to board’s lists
     await Board.findByIdAndUpdate(boardId, { $push: { lists: newList._id } });
 
-    // Step 4: Log the action with correct workspace
+    io.to(board.workspace.toString()).emit("listCreated", newList);
+
     await logActivity({
       userId: req.user!.id,
-      workspaceId: board.workspace.toString(), // ✅ Correct workspace reference
+      workspaceId: board.workspace.toString(),
       entityType: "List",
       entityName: title,
       actionType: "create",
-      details: `Created List: "${title}"`,
+      details: `Created List: "${title}" at position ${position}`,
     });
 
     res.status(201).json({ list: newList });
@@ -47,27 +53,13 @@ export const CreateList = async (req: Request, res: Response) => {
   }
 };
 
-
-// ✅ GET ALL LISTS FOR A BOARD
-export const GetListsByBoard = async (req: Request, res: Response) => {
-  try {
-    // 
-    const { boardId } = req.params;
-
-    const lists = await List.find({ board: boardId })
-      .populate("cards");
-
-    res.status(200).json({ lists });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-};
-
 // ✅ UPDATE ALL LISTS FOR A BOARD
 export const UpdateList = async (req: Request, res: Response) => {
   try {
     const { listId } = req.params;
+    console.log("Updating List ID:", listId);
     const { title } = req.body;
+    const io = req.app.get("io");
 
     // Step 1: Find the list
     const list = await List.findById(listId);
@@ -91,6 +83,9 @@ export const UpdateList = async (req: Request, res: Response) => {
       details: `Updated List: "${list.title}"`,
     });
 
+    // Step 5: Emit to all members in that workspace
+    io.to(board.workspace.toString()).emit("listUpdated", list);
+
     res.status(200).json({ list });
   } catch (error) {
     console.error("Error updating list:", error);
@@ -98,10 +93,36 @@ export const UpdateList = async (req: Request, res: Response) => {
   }
 };
 
+// ✅ UPDATE ALL LIST COLOR
+export const UpdateListColor = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, position, color } = req.body;
+
+    const list = await List.findById(id);
+    if (!list) {
+      return res.status(404).json({ message: "List not found" });
+    }
+
+    if (title !== undefined) list.title = title;
+    if (position !== undefined) list.position = position;
+    if (color !== undefined) list.color = color;
+
+    await list.save();
+
+    res.status(200).json({ list });
+  } catch (error) {
+    console.error("Error updating list:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 // ✅ Delete a list
 export const DeleteList = async (req: Request, res: Response) => {
   try {
     const { listId } = req.params;
+    const io = req.app.get("io");
 
     // Step 1: Find the list
     const list = await List.findById(listId);
@@ -127,9 +148,67 @@ export const DeleteList = async (req: Request, res: Response) => {
       details: `Deleted List: "${list.title}"`,
     });
 
+
+    // ✅ Emit deletion event
+    io.to(board.workspace.toString()).emit("listDeleted", {
+      listId,
+      boardId: board._id,
+    });
+
     res.status(200).json({ message: "List deleted successfully" });
   } catch (error) {
     console.error("Error deleting list:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const GetAllLists = async (req: Request, res: Response) => {
+  try {
+    const lists = await List.find({ owner: req.user?.id },)
+
+    res.status(200).json({ lists });
+  } catch (error) {
+    console.error("Error fetching lists:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const GetListsByBoard = async (req: Request, res: Response) => {
+  try {
+    const boardId = (req.query.board || req.query.boardId) as string;
+
+    if (!boardId) {
+      return res.status(400).json({ message: "Board ID is required" });
+    }
+
+    const lists = await List.find({ board: boardId })
+      .populate("cards")
+      .sort({ position: 1 }); // ✅ Order by position ascending
+
+    res.status(200).json({ lists });
+  } catch (error) {
+    console.error("Error fetching lists:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const ReorderLists = async (req: Request, res: Response) => {
+  try {
+    const { boardId, orderedListIds } = req.body; // e.g. ["list1", "list2", "list3"]
+
+    if (!boardId || !orderedListIds || !Array.isArray(orderedListIds)) {
+      return res.status(400).json({ message: "boardId and orderedListIds are required" });
+    }
+
+    const updates = orderedListIds.map((id, index) =>
+      List.findByIdAndUpdate(id, { position: index })
+    );
+
+    await Promise.all(updates);
+
+    res.status(200).json({ message: "Lists reordered successfully" });
+  } catch (error) {
+    console.error("Error reordering lists:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };

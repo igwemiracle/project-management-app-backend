@@ -3,17 +3,26 @@ import validator from "validator";
 
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
-  name: string;
+  fullName: string;
+  username: string;
   email: string;
   password: string;
   role: "admin" | "user";
+  isVerified: boolean;
+  verificationToken?: string | null;
+  verificationExpires?: Date | null;
+
 }
 
 const userSchema = new Schema<IUser>(
   {
-    name: {
+    fullName: {
       type: String,
-      required: [true, 'Please provide name']
+      required: [true, 'Please provide your full name']
+    },
+    username: {
+      type: String,
+      required: [true, 'Please provide username']
     },
     email: {
       type: String,
@@ -29,10 +38,11 @@ const userSchema = new Schema<IUser>(
       required: [true, 'Please provide password']
     },
     role: {
-      type: String,
-      enum: ['admin', 'user'],
-      default: 'user',
+      type: String, enum: ['admin', 'user'],
     },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String, default: null },
+    verificationExpires: { type: Date, default: null },
   },
 
   { timestamps: true }
