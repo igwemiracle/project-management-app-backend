@@ -25,6 +25,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+
 /* Routers */
 app.use("/api/auth", authRoutes);
 app.use("/api/account", accountRoutes);
