@@ -40,7 +40,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
     // const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
 
     // 
-    const verificationLink = `https://project-management-7d86ayln8-igwe-miracles-projects.vercel.app/verify-email?token=${verificationToken}`;
+    const verificationLink = `https://project-management-app-orpin-delta.vercel.app/verify-email?token=${verificationToken}`;
 
 
     resend.emails.send({
