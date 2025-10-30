@@ -73,7 +73,7 @@ export const VerifyEmail = async (req: Request, res: Response) => {
     if (!token) return res.status(400).json({ message: "Token is required" });
     const user = await User.findOne({ verificationToken: token });
 
-    // 👇 Handle already verified users
+    // Handle already verified users
     if (!user) {
       // Maybe the user has already verified, let's check
       const verifiedUser = await User.findOne({ isVerified: true });
