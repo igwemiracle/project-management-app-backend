@@ -19,10 +19,11 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://project-management-bgsurbsfw-igwe-miracles-projects.vercel.app",
-  "https://project-management-app-orpin-delta.vercel.app",
-  "https://project-management-app-git-main-igwe-miracles-projects.vercel.app"
+  "https://project-management-2fi6r5uzq-igwe-miracles-projects.vercel.app"
 ];
+
+
+
 
 app.use(cors({
   origin: function (origin, callback) {
