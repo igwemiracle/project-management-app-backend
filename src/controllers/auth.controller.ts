@@ -13,6 +13,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
   try {
     const { fullName, username, email, password } = req.body;
 
+
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: "Email already in use" });
@@ -31,36 +32,34 @@ export const RegisterUser = async (req: Request, res: Response) => {
       isVerified: false,
     });
 
-    // ✅ Respond to frontend immediately
-    res.status(201).json({
-      message: "User registered successfully. Please verify your email.",
-      user: { id: user._id, email: user.email },
+    // Send verification email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
-    // ✅ Send verification email asynchronously
+    // ✅ IMPORTANT: redirect user to your frontend route, not backend on email verification.
     const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
 
-    resend.emails.send({
-      from: "Planora <onboarding@resend.dev>",
+    await transporter.sendMail({
+      from: '"Planora" <no-reply@planora.com>',
       to: email,
       subject: "Verify your email address",
       html: `
-        <div style="font-family: sans-serif; line-height: 1.5;">
-          <h2>Welcome, ${username}!</h2>
-          <p>Please verify your email by clicking the link below:</p>
-          <p><a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a></p>
-          <br />
-          <p>If you didn’t sign up for Planora, please ignore this email.</p>
-        </div>
+        <h2>Welcome, ${username}!</h2>
+        <p>Please verify your email by clicking the link below:</p>
+        <a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a>
       `,
-    }).then(() => {
-      console.log("✅ Verification email sent via Resend to:", email);
-    }).catch((err) => {
-      console.error("❌ Error sending email via Resend:", err);
     });
 
+    res.status(201).json({
+      message: "User registered successfully. Please verify your email.",
+      user: user
+    });
   } catch (error) {
-    console.error("Register error:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
