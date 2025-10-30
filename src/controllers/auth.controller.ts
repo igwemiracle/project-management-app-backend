@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
 import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
-import { Resend } from "resend";
+// import { Resend } from "resend";
 
 // const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -102,7 +102,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
       },
     });
 
-    const verificationLink = `https://your-frontend-domain.com/verify-email?token=${verificationToken}`;
+    const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
 
     // sendMail async, don’t block response
     transporter.sendMail({
