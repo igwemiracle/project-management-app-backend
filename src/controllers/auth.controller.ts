@@ -38,7 +38,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
     });
 
     // ✅ Send verification email asynchronously
-    const verificationLink = `https://your-frontend-domain.com/verify-email?token=${verificationToken}`;
+    const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
 
     resend.emails.send({
       from: "Planora <onboarding@resend.dev>",
@@ -48,7 +48,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
         <div style="font-family: sans-serif; line-height: 1.5;">
           <h2>Welcome, ${username}!</h2>
           <p>Please verify your email by clicking the link below:</p>
-          <p><a href="${verificationLink}" target="_blank" rel="noopener noreferrer" style="color:#f1356d;">Verify Email</a></p>
+          <p><a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a></p>
           <br />
           <p>If you didn’t sign up for Planora, please ignore this email.</p>
         </div>
