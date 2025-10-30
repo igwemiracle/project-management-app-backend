@@ -4,66 +4,10 @@ import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
 import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
-// import { Resend } from "resend";
+import { Resend } from "resend";
 
-// const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-
-// export const RegisterUser = async (req: Request, res: Response) => {
-//   try {
-//     const { fullName, username, email, password } = req.body;
-
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser)
-//       return res.status(400).json({ message: "Email already in use" });
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const verificationToken = crypto.randomBytes(32).toString("hex");
-//     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-//     const user = await User.create({
-//       fullName,
-//       username,
-//       email,
-//       password: hashedPassword,
-//       verificationToken,
-//       verificationExpires,
-//       isVerified: false,
-//     });
-
-//     // ✅ Respond to frontend immediately
-//     res.status(201).json({
-//       message: "User registered successfully. Please verify your email.",
-//       user: { id: user._id, email: user.email },
-//     });
-
-//     // ✅ Send verification email asynchronously
-//     const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
-
-//     resend.emails.send({
-//       from: "Planora <igwemiracle35@gmail.com>",
-//       to: email,
-//       subject: "Verify your email address",
-//       html: `
-//         <div style="font-family: sans-serif; line-height: 1.5;">
-//           <h2>Welcome, ${username}!</h2>
-//           <p>Please verify your email by clicking the link below:</p>
-//           <p><a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a></p>
-//           <br />
-//           <p>If you didn’t sign up for Planora, please ignore this email.</p>
-//         </div>
-//       `,
-//     }).then(() => {
-//       console.log("✅ Verification email sent via Resend to:", email);
-//     }).catch((err) => {
-//       console.error("❌ Error sending email via Resend:", err);
-//     });
-
-//   } catch (error) {
-//     console.error("Register error:", error);
-//     res.status(500).json({ message: "Server error", error });
-//   }
-// };
 
 export const RegisterUser = async (req: Request, res: Response) => {
   try {
@@ -87,37 +31,32 @@ export const RegisterUser = async (req: Request, res: Response) => {
       isVerified: false,
     });
 
-    // ✅ Respond IMMEDIATELY (so frontend doesn’t timeout)
+    // ✅ Respond to frontend immediately
     res.status(201).json({
       message: "User registered successfully. Please verify your email.",
       user: { id: user._id, email: user.email },
     });
 
-    // 📩 Send email in the background (no await)
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
+    // ✅ Send verification email asynchronously
     const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
 
-    // sendMail async, don’t block response
-    transporter.sendMail({
-      from: '"Planora" <no-reply@planora.com>',
+    resend.emails.send({
+      from: "Planora <onboarding@resend.dev>",
       to: email,
       subject: "Verify your email address",
       html: `
-        <h2>Welcome, ${username}!</h2>
-        <p>Please verify your email by clicking the link below:</p>
-        <a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a>
+        <div style="font-family: sans-serif; line-height: 1.5;">
+          <h2>Welcome, ${username}!</h2>
+          <p>Please verify your email by clicking the link below:</p>
+          <p><a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a></p>
+          <br />
+          <p>If you didn’t sign up for Planora, please ignore this email.</p>
+        </div>
       `,
     }).then(() => {
-      console.log("Verification email sent to:", email);
+      console.log("✅ Verification email sent via Resend to:", email);
     }).catch((err) => {
-      console.error("Error sending email:", err);
+      console.error("❌ Error sending email via Resend:", err);
     });
 
   } catch (error) {
@@ -125,7 +64,6 @@ export const RegisterUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 
 export const VerifyEmail = async (req: Request, res: Response) => {
