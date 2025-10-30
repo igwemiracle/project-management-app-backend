@@ -40,7 +40,9 @@ export const RegisterUser = async (req: Request, res: Response) => {
     });
 
     // ✅ IMPORTANT: redirect user to your frontend route, not backend on email verification.
-    const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+    // const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+
+    const verificationLink = `https://project-management-4pf8jgd20-igwe-miracles-projects.vercel.app/verify-email?token=${verificationToken}`;
 
     await transporter.sendMail({
       from: '"Planora" <no-reply@planora.com>',
