@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db";
 import authRoutes from "./routes/auth.routes";
@@ -13,7 +12,6 @@ import workspaceRoutes from "./routes/workspace.routes";
 import activityRoutes from "./routes/activity.routes";
 import accountRoutes from "./routes/account.routes";
 
-dotenv.config();
 connectDB();
 
 const app = express();

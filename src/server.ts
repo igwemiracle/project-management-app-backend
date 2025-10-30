@@ -1,9 +1,15 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import http from "http";
 import { Server } from "socket.io";
 import app from "./app";
 import registerSocketHandlers from "./sockets";
 
 const PORT = process.env.PORT || 5000;
+
+// ✅ Check if environment variables are loaded
+console.log("Resend API Key:", process.env.RESEND_API_KEY ? "✅ Loaded" : "❌ Missing");
 
 // 1️⃣ Create a raw HTTP server using your Express app
 const server = http.createServer(app);
