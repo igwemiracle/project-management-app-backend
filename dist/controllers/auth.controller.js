@@ -5,11 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LogoutUser = exports.createAdmin = exports.LoginUser = exports.VerifyEmail = exports.RegisterUser = void 0;
 const crypto_1 = __importDefault(require("crypto"));
-const nodemailer_1 = __importDefault(require("nodemailer"));
 const user_model_1 = require("../models/user.model");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const attachCookiesToResponse_1 = require("../utils/attachCookiesToResponse");
-const axios_1 = __importDefault(require("axios"));
+const resend_1 = require("resend");
+const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 const RegisterUser = async (req, res) => {
     try {
         const { fullName, username, email, password } = req.body;
@@ -28,77 +28,34 @@ const RegisterUser = async (req, res) => {
             verificationExpires,
             isVerified: false,
         });
-        // Respond immediately so client doesn't time out
+        // ✅ Respond to frontend immediately
         res.status(201).json({
             message: "User registered successfully. Please verify your email.",
             user: { id: user._id, email: user.email },
         });
-        // Build verification link using FRONTEND_URL from env
-        const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
-        const verificationLink = `${frontend.replace(/\/$/, "")}/verify-email?token=${verificationToken}`;
-        // Send email in background, non-blocking
-        if (process.env.NODE_ENV === "development") {
-            // optional: use nodemailer locally for testing (this will attempt SMTP locally)
-            try {
-                const transporter = nodemailer_1.default.createTransport({
-                    service: "gmail",
-                    auth: {
-                        user: process.env.EMAIL_USER,
-                        pass: process.env.EMAIL_PASS, // app password
-                    },
-                });
-                const mailOptions = {
-                    from: `"Planora" <${process.env.SENDER_EMAIL}>`,
-                    to: email,
-                    subject: "Verify your email address",
-                    html: `
-            <div style="font-family: sans-serif; line-height: 1.5;">
-              <h2>Welcome, ${username}!</h2>
-              <p>Please verify your email by clicking the link below:</p>
-              <p><a href="${verificationLink}" target="_blank" style="color:#f1356d;">Verify Email</a></p>
-            </div>
-          `,
-                };
-                await transporter.sendMail(mailOptions);
-                console.log("Verification email sent (nodemailer) to:", email);
-            }
-            catch (err) {
-                console.error("Local email send failed:", err);
-            }
-        }
-        else {
-            // Production: use Brevo API (HTTPS)
-            const brevoPayload = {
-                sender: { name: "Planora", email: process.env.SENDER_EMAIL },
-                to: [{ email }],
-                subject: "Verify your email address",
-                htmlContent: `
-          <div style="font-family: sans-serif; line-height: 1.5;">
-            <h2>Welcome, ${username}!</h2>
-            <p>Please verify your email by clicking the link below:</p>
-            <p><a href="${verificationLink}" target="_blank" style="color:#f1356d;">Verify Email</a></p>
-          </div>
-        `,
-            };
-            // fire-and-forget: do not await to avoid blocking response
-            axios_1.default.post("https://api.brevo.com/v3/smtp/email", brevoPayload, {
-                headers: {
-                    "api-key": process.env.BREVO_API_KEY,
-                    "Content-Type": "application/json",
-                },
-                timeout: 10000, // optional short timeout for background call
-            })
-                .then((resp) => {
-                console.log("Brevo email sent:", resp.data);
-            })
-                .catch((err) => {
-                console.error("Brevo send error:", err.response?.data || err.message);
-            });
-        }
+        // ✅ Send verification email asynchronously
+        const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+        resend.emails.send({
+            from: "Planora <onboarding@resend.dev>",
+            to: email,
+            subject: "Verify your email address",
+            html: `
+        <div style="font-family: sans-serif; line-height: 1.5;">
+          <h2>Welcome, ${username}!</h2>
+          <p>Please verify your email by clicking the link below:</p>
+          <p><a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a></p>
+          <br />
+          <p>If you didn’t sign up for Planora, please ignore this email.</p>
+        </div>
+      `,
+        }).then(() => {
+            console.log("✅ Verification email sent via Resend to:", email);
+        }).catch((err) => {
+            console.error("❌ Error sending email via Resend:", err);
+        });
     }
     catch (error) {
         console.error("Register error:", error);
-        // If user was created but an error occurred afterwards, you may want to handle cleanup or re-notify.
         res.status(500).json({ message: "Server error", error });
     }
 };

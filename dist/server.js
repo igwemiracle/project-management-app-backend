@@ -12,7 +12,7 @@ const app_1 = __importDefault(require("./app"));
 const sockets_1 = __importDefault(require("./sockets"));
 const PORT = process.env.PORT || 5000;
 // ✅ Check if environment variables are loaded
-// console.log("Resend API Key:", process.env.RESEND_API_KEY ? "✅ Loaded" : "❌ Missing");
+console.log("Resend API Key:", process.env.RESEND_API_KEY ? "✅ Loaded" : "❌ Missing");
 // 1️⃣ Create a raw HTTP server using your Express app
 const server = http_1.default.createServer(app_1.default);
 // 2️⃣ Initialize Socket.IO server and attach to HTTP server
