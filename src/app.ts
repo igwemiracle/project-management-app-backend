@@ -18,7 +18,7 @@ const app = express();
 
 
 const allowedOrigins = [
-  "http://localhost:5173",
+  "http://localhost:5173/",
   "https://project-management-app-orpin-delta.vercel.app",
   "https://project-management-app-git-main-igwe-miracles-projects.vercel.app",
   "https://project-management-7d86ayln8-igwe-miracles-projects.vercel.app",
