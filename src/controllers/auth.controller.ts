@@ -4,9 +4,7 @@ import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
 import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
-import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 export const RegisterUser = async (req: Request, res: Response) => {
