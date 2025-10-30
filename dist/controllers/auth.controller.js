@@ -95,7 +95,6 @@ const RegisterUser = async (req, res) => {
                 console.error("Brevo send error:", err.response?.data || err.message);
             });
         }
-        // done
     }
     catch (error) {
         console.error("Register error:", error);

@@ -101,7 +101,6 @@ export const RegisterUser = async (req: Request, res: Response) => {
         });
     }
 
-    // done
   } catch (error) {
     console.error("Register error:", error);
     // If user was created but an error occurred afterwards, you may want to handle cleanup or re-notify.
