@@ -41,7 +41,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
     const verificationLink = `https://your-frontend-domain.com/verify-email?token=${verificationToken}`;
 
     resend.emails.send({
-      from: "Planora <no-reply@planora.com>",
+      from: "Planora <onboarding@resend.dev>",
       to: email,
       subject: "Verify your email address",
       html: `
