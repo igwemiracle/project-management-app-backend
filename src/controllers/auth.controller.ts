@@ -33,11 +33,15 @@ export const RegisterUser = async (req: Request, res: Response) => {
     // ✅ Respond to frontend immediately
     res.status(201).json({
       message: "User registered successfully. Please verify your email.",
-      user: { id: user._id, email: user.email },
+      user: user
     });
 
-    // ✅ Send verification email asynchronously
-    const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+    // ✅ Send verification email asynchronously(development)
+    // const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+
+    // 
+    const verificationLink = `https://project-management-4pf8jgd20-igwe-miracles-projects.vercel.app/verify-email?token=${verificationToken}`;
+
 
     resend.emails.send({
       from: "Planora <onboarding@resend.dev>",
