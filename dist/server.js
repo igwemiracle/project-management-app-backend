@@ -4,11 +4,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.io = void 0;
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
 const app_1 = __importDefault(require("./app"));
 const sockets_1 = __importDefault(require("./sockets"));
 const PORT = process.env.PORT || 5000;
+// ✅ Check if environment variables are loaded
+console.log("Resend API Key:", process.env.RESEND_API_KEY ? "✅ Loaded" : "❌ Missing");
 // 1️⃣ Create a raw HTTP server using your Express app
 const server = http_1.default.createServer(app_1.default);
 // 2️⃣ Initialize Socket.IO server and attach to HTTP server
