@@ -11,6 +11,7 @@ import commentRoutes from "./routes/comment.routes";
 import workspaceRoutes from "./routes/workspace.routes";
 import activityRoutes from "./routes/activity.routes";
 import accountRoutes from "./routes/account.routes";
+import recentlyViewedBoardRoutes from "./routes/recentlyViewedBoard.routes"
 
 connectDB();
 
@@ -54,5 +55,7 @@ app.use("/api/cards", cardRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/workspaces", workspaceRoutes)
 app.use("/api/activity-logs", activityRoutes);
+app.use("/api/recently-viewed", recentlyViewedBoardRoutes);
+
 
 export default app;
