@@ -4,12 +4,10 @@ import {
   GetBoards,
   GetBoardById,
   UpdateBoard,
-  DeleteBoard
+  DeleteBoard,
+  toggleFavorite
 } from '../controllers/board.controller';
-import { authorizePermissions } from "../middlewares/authorizePermissions";
 import { authenticateUser } from "../middlewares/authenticateUser";
-import { authorizeRoles } from "../middlewares/auth.middleware";
-
 
 const router = express.Router();
 
@@ -19,5 +17,7 @@ router.get("/", authenticateUser, GetBoards);
 router.get("/:id", authenticateUser, GetBoardById);
 router.put("/:id", authenticateUser, UpdateBoard);
 router.delete("/:id", authenticateUser, DeleteBoard);
+router.patch("/:id", authenticateUser, toggleFavorite);
+
 
 export default router;

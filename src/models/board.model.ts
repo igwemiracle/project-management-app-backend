@@ -8,6 +8,7 @@ export interface IBoard extends Document {
   createdBy: mongoose.Types.ObjectId;
   lists: mongoose.Types.ObjectId[];
   workspace: mongoose.Types.ObjectId;
+  isFavorite?: boolean;
 }
 
 const boardSchema = new Schema<IBoard>(
@@ -17,7 +18,8 @@ const boardSchema = new Schema<IBoard>(
     color: { type: String, default: "#3B82F6" },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     lists: [{ type: Schema.Types.ObjectId, ref: 'List' }],
-    workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true }, // ✅ added
+    workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true },
+    isFavorite: { type: Boolean, default: false },
   },
   {
     timestamps: true,

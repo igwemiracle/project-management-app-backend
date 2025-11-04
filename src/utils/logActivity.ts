@@ -7,7 +7,7 @@ interface LogActivityParams {
   workspaceId?: string;
   entityType: "Workspace" | "Board" | "List" | "Card" | "Comment";
   entityName?: string;
-  actionType: "create" | "update" | "delete";
+  actionType: "create" | "update" | "delete" | "marked_favorite" | "unmarked_favorite";
   details?: string;
 }
 
