@@ -137,7 +137,7 @@ export const LoginUser = async (req: Request, res: Response) => {
       userId: user._id.toString(),
       role: user.role,
     });
-
+    console.log("Cookie headers:", res.getHeaders()["set-cookie"]);
     res.status(200).json({
       message: "Login successful",
       user: {
