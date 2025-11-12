@@ -39,6 +39,8 @@ app.use(cors({
       callback(new Error("Not allowed by CORS"), false);
     }
   },
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
 
