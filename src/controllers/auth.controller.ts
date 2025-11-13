@@ -3,9 +3,9 @@ import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
 import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
-import { Resend } from "resend";
+import sgMail from "@sendgrid/mail";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 
 export const RegisterUser = async (req: Request, res: Response) => {
@@ -30,43 +30,35 @@ export const RegisterUser = async (req: Request, res: Response) => {
       isVerified: false,
     });
 
-    // ✅ Respond to frontend immediately
-    res.status(201).json({
-      message: "User registered successfully. Please verify your email.",
-      user: user
-    });
-
-    // ✅ Send verification email asynchronously(development)
+    // ✅ SendGrid email
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
     // const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
-
-    // 
     const verificationLink = `https://project-management-app-orpin-delta.vercel.app/verify-email?token=${verificationToken}`;
 
-
-    resend.emails.send({
-      from: "Planora <onboarding@resend.dev>",
+    const msg = {
       to: email,
+      from: process.env.SENDER_EMAIL!,
       subject: "Verify your email address",
       html: `
-        <div style="font-family: sans-serif; line-height: 1.5;">
-          <h2>Welcome, ${username}!</h2>
-          <p>Please verify your email by clicking the link below:</p>
-          <p><a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a></p>
-          <br />
-          <p>If you didn’t sign up for Planora, please ignore this email.</p>
-        </div>
+        <h2>Welcome, ${username}!</h2>
+        <p>Please verify your email by clicking the link below:</p>
+        <a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a>
+        <p>This link expires in 24 hours.</p>
       `,
-    }).then(() => {
-      console.log("✅ Verification email sent via Resend to:", email);
-    }).catch((err) => {
-      console.error("❌ Error sending email via Resend:", err);
-    });
+    };
 
+    await sgMail.send(msg);
+
+    res.status(201).json({
+      message: "User registered successfully. Please verify your email.",
+      user,
+    });
   } catch (error) {
-    console.error("Register error:", error);
+    console.error("SendGrid Error:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 
 

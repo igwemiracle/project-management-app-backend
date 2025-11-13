@@ -9,7 +9,7 @@ import registerSocketHandlers from "./sockets";
 const PORT = process.env.PORT || 5000;
 
 // ✅ Check if environment variables are loaded
-console.log("Resend API Key:", process.env.RESEND_API_KEY ? "✅ Loaded" : "❌ Missing");
+console.log("SENDGRID_API_KEY:", process.env.SENDGRID_API_KEY ? "✅ Loaded" : "❌ Missing");
 
 // 1️⃣ Create a raw HTTP server using your Express app
 const server = http.createServer(app);
