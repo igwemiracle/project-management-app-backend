@@ -8,8 +8,10 @@ const crypto_1 = __importDefault(require("crypto"));
 const user_model_1 = require("../models/user.model");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const attachCookiesToResponse_1 = require("../utils/attachCookiesToResponse");
-const resend_1 = require("resend");
-const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
+const mail_1 = __importDefault(require("@sendgrid/mail"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+mail_1.default.setApiKey(process.env.SENDGRID_API_KEY);
 const RegisterUser = async (req, res) => {
     try {
         const { fullName, username, email, password } = req.body;
@@ -28,34 +30,30 @@ const RegisterUser = async (req, res) => {
             verificationExpires,
             isVerified: false,
         });
-        // ✅ Respond to frontend immediately
+        const verificationLink = `https://project-management-app-orpin-delta.vercel.app/verify-email?token=${verificationToken}`;
+        // Read HTML template
+        const templatePath = path_1.default.join(__dirname, "../templates/verify-email.html");
+        let htmlTemplate = fs_1.default.readFileSync(templatePath, "utf-8");
+        // Replace placeholders
+        htmlTemplate = htmlTemplate
+            .replace(/{{username}}/g, username)
+            .replace(/{{verificationLink}}/g, verificationLink)
+            .replace(/{{workflowImage}}/g, "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144930/fypiugqqszqsjoasonql.svg")
+            .replace(/{{verifyImage}}/g, "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144932/jbqdf9frh7oxo0ypq2dr.jpg");
+        const msg = {
+            to: email,
+            from: process.env.SENDER_EMAIL,
+            subject: "Verify your email address",
+            html: htmlTemplate,
+        };
+        await mail_1.default.send(msg);
         res.status(201).json({
             message: "User registered successfully. Please verify your email.",
-            user: { id: user._id, email: user.email },
-        });
-        // ✅ Send verification email asynchronously
-        const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
-        resend.emails.send({
-            from: "Planora <onboarding@resend.dev>",
-            to: email,
-            subject: "Verify your email address",
-            html: `
-        <div style="font-family: sans-serif; line-height: 1.5;">
-          <h2>Welcome, ${username}!</h2>
-          <p>Please verify your email by clicking the link below:</p>
-          <p><a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a></p>
-          <br />
-          <p>If you didn’t sign up for Planora, please ignore this email.</p>
-        </div>
-      `,
-        }).then(() => {
-            console.log("✅ Verification email sent via Resend to:", email);
-        }).catch((err) => {
-            console.error("❌ Error sending email via Resend:", err);
+            user,
         });
     }
     catch (error) {
-        console.error("Register error:", error);
+        console.error("SendGrid Error:", error);
         res.status(500).json({ message: "Server error", error });
     }
 };
@@ -119,6 +117,7 @@ const LoginUser = async (req, res) => {
             userId: user._id.toString(),
             role: user.role,
         });
+        console.log("Cookie headers:", res.getHeaders()["set-cookie"]);
         res.status(200).json({
             message: "Login successful",
             user: {

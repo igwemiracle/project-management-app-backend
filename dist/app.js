@@ -16,11 +16,17 @@ const comment_routes_1 = __importDefault(require("./routes/comment.routes"));
 const workspace_routes_1 = __importDefault(require("./routes/workspace.routes"));
 const activity_routes_1 = __importDefault(require("./routes/activity.routes"));
 const account_routes_1 = __importDefault(require("./routes/account.routes"));
+const recentlyViewedBoard_routes_1 = __importDefault(require("./routes/recentlyViewedBoard.routes"));
 (0, db_1.default)();
 const app = (0, express_1.default)();
+// Serve static files from the 'public' folder
 const allowedOrigins = [
     "http://localhost:5173",
-    "https://project-management-4pf8jgd20-igwe-miracles-projects.vercel.app"
+    "https://project-management-app-orpin-delta.vercel.app",
+    "https://project-management-app-git-main-igwe-miracles-projects.vercel.app",
+    "https://project-management-7d86ayln8-igwe-miracles-projects.vercel.app",
+    "project-management-app-git-fixing-867297-igwe-miracles-projects.vercel.app",
+    "https://project-management-jv603nhlw-igwe-miracles-projects.vercel.app",
 ];
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
@@ -32,6 +38,8 @@ app.use((0, cors_1.default)({
             callback(new Error("Not allowed by CORS"), false);
         }
     },
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
 }));
 app.use(express_1.default.json());
@@ -46,5 +54,6 @@ app.use("/api/cards", card_routes_1.default);
 app.use("/api/comments", comment_routes_1.default);
 app.use("/api/workspaces", workspace_routes_1.default);
 app.use("/api/activity-logs", activity_routes_1.default);
+app.use("/api/recently-viewed", recentlyViewedBoard_routes_1.default);
 exports.default = app;
 //# sourceMappingURL=app.js.map

@@ -1,76 +1,22 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
-    "rootDir": "./src",
+    "target": "ES2020",
+    "module": "CommonJS",
     "outDir": "./dist",
+    "rootDir": "./src",
 
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
-    /* Environment Settings */
-    "module": "commonjs",
-    "target": "ES2020", // ✅ Better async/await & modern syntax support
-    "lib": ["ES2020"], // ✅ Needed for Node features
-    "types": ["node"],
-
-    // ============================
-    // "module": "commonjs",
-    // "target": "ES6",
-    // "types": [],
-    // ============================
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
-
-    // ========================
-    // Output Option
-    "sourceMap": true,
-    "declaration": false, // ✅ No need for declaration files on server deploy
-    "declarationMap": false,
-
-    // ========================
-    // Other Outputs
-    // "sourceMap": true,
-    // "declaration": true,
-    // "declarationMap": true,
-    // ========================
-
-    /* Type Checking */
     "strict": true,
-    "skipLibCheck": true,
     "esModuleInterop": true,
-    "isolatedModules": false, // ✅ Allows TS to compile multiple modules properly
-    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
 
-    // ========================
-    // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false,
-    // "isolatedModules": true,
-    // "strict": true,
-    // "moduleDetection": "force",
-    // "skipLibCheck": true,
-    // "esModuleInterop": true,
-    // ========================================================================
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
 
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": false,
-    "noUncheckedSideEffectImports": true,
-    // "typeRoots": ["./src/types", "./node_modules/@types"],
-
-    /* Paths */
-    "typeRoots": ["./src/types", "./node_modules/@types"]
+    "sourceMap": true,
+    "noEmitOnError": false
   },
-  "include": ["src"], // ✅ Only compile the source folder
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }

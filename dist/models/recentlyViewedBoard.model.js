@@ -33,18 +33,14 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Board = void 0;
+exports.RecentlyViewedBoard = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const boardSchema = new mongoose_1.Schema({
-    title: { type: String, required: [true, 'Please provide title'] },
-    description: { type: String },
-    color: { type: String, default: "#3B82F6" },
-    createdBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
-    lists: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'List' }],
-    workspace: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Workspace', required: true },
-    isFavorite: { type: Boolean, default: false },
-}, {
-    timestamps: true,
-});
-exports.Board = mongoose_1.default.model('Board', boardSchema);
-//# sourceMappingURL=board.model.js.map
+const recentlyViewedBoardSchema = new mongoose_1.Schema({
+    user: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    board: { type: mongoose_1.Schema.Types.ObjectId, ref: "Board", required: true },
+    viewedAt: { type: Date, default: Date.now },
+}, { timestamps: true });
+// Ensure uniqueness (so only one entry per user + board)
+recentlyViewedBoardSchema.index({ user: 1, board: 1 }, { unique: true });
+exports.RecentlyViewedBoard = mongoose_1.default.model("RecentlyViewedBoard", recentlyViewedBoardSchema);
+//# sourceMappingURL=recentlyViewedBoard.model.js.map
