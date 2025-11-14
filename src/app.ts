@@ -12,11 +12,13 @@ import workspaceRoutes from "./routes/workspace.routes";
 import activityRoutes from "./routes/activity.routes";
 import accountRoutes from "./routes/account.routes";
 import recentlyViewedBoardRoutes from "./routes/recentlyViewedBoard.routes"
+import path from "path";
 
 connectDB();
 
 const app = express();
 
+// Serve static files from the 'public' folder
 
 const allowedOrigins = [
   "http://localhost:5173",

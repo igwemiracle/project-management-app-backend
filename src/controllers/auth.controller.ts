@@ -4,8 +4,12 @@ import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
 import { attachCookiesToResponse } from "../utils/attachCookiesToResponse";
 import sgMail from "@sendgrid/mail";
+import fs from "fs";
+import path from "path"
+
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+
 
 
 export const RegisterUser = async (req: Request, res: Response) => {
@@ -30,21 +34,24 @@ export const RegisterUser = async (req: Request, res: Response) => {
       isVerified: false,
     });
 
-    // ✅ SendGrid email
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
-    // const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
     const verificationLink = `https://project-management-app-orpin-delta.vercel.app/verify-email?token=${verificationToken}`;
+
+    // Read HTML template
+    const templatePath = path.join(__dirname, "../templates/verify-email.html");
+    let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
+
+    // Replace placeholders
+    htmlTemplate = htmlTemplate
+      .replace(/{{username}}/g, username)
+      .replace(/{{verificationLink}}/g, verificationLink)
+      .replace(/{{workflowImage}}/g, "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144930/fypiugqqszqsjoasonql.svg")
+      .replace(/{{verifyImage}}/g, "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144932/jbqdf9frh7oxo0ypq2dr.jpg");
 
     const msg = {
       to: email,
       from: process.env.SENDER_EMAIL!,
       subject: "Verify your email address",
-      html: `
-        <h2>Welcome, ${username}!</h2>
-        <p>Please verify your email by clicking the link below:</p>
-        <a href="${verificationLink}" target="_blank" rel="noopener noreferrer">Verify Email</a>
-        <p>This link expires in 24 hours.</p>
-      `,
+      html: htmlTemplate,
     };
 
     await sgMail.send(msg);
@@ -181,3 +188,6 @@ export const LogoutUser = (req: Request, res: Response) => {
   });
   res.status(200).json({ "success": true, message: "Logged out successfully" });
 };
+
+
+
