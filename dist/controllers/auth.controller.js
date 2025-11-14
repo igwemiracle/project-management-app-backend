@@ -31,8 +31,9 @@ const RegisterUser = async (req, res) => {
             isVerified: false,
         });
         const verificationLink = `https://project-management-app-orpin-delta.vercel.app/verify-email?token=${verificationToken}`;
-        // Read HTML template
-        const templatePath = path_1.default.join(__dirname, "../templates/verify-email.html");
+        // ✅ Correct template path (works locally + on Render)
+        const templatePath = path_1.default.join(process.cwd(), "templates", "verify-email.html");
+        // Read template
         let htmlTemplate = fs_1.default.readFileSync(templatePath, "utf-8");
         // Replace placeholders
         htmlTemplate = htmlTemplate

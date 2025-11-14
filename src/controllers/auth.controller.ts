@@ -11,7 +11,6 @@ import path from "path"
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 
-
 export const RegisterUser = async (req: Request, res: Response) => {
   try {
     const { fullName, username, email, password } = req.body;
@@ -36,16 +35,24 @@ export const RegisterUser = async (req: Request, res: Response) => {
 
     const verificationLink = `https://project-management-app-orpin-delta.vercel.app/verify-email?token=${verificationToken}`;
 
-    // Read HTML template
-    const templatePath = path.join(__dirname, "../templates/verify-email.html");
+    // ✅ Correct template path (works locally + on Render)
+    const templatePath = path.join(process.cwd(), "templates", "verify-email.html");
+
+    // Read template
     let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
 
     // Replace placeholders
     htmlTemplate = htmlTemplate
       .replace(/{{username}}/g, username)
       .replace(/{{verificationLink}}/g, verificationLink)
-      .replace(/{{workflowImage}}/g, "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144930/fypiugqqszqsjoasonql.svg")
-      .replace(/{{verifyImage}}/g, "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144932/jbqdf9frh7oxo0ypq2dr.jpg");
+      .replace(
+        /{{workflowImage}}/g,
+        "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144930/fypiugqqszqsjoasonql.svg"
+      )
+      .replace(
+        /{{verifyImage}}/g,
+        "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144932/jbqdf9frh7oxo0ypq2dr.jpg"
+      );
 
     const msg = {
       to: email,
@@ -65,9 +72,6 @@ export const RegisterUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
-
-
 
 
 export const VerifyEmail = async (req: Request, res: Response) => {
