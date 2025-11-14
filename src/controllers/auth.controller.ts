@@ -47,7 +47,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
       .replace(/{{verificationLink}}/g, verificationLink)
       .replace(
         /{{workflowImage}}/g,
-        "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763144930/fypiugqqszqsjoasonql.svg"
+        "https://res.cloudinary.com/db8ezcpjh/image/upload/v1763152497/t7epyt0h6moqcpjturq9.svg"
       )
       .replace(
         /{{verifyImage}}/g,
