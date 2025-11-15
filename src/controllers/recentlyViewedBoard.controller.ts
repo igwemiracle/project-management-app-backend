@@ -95,3 +95,81 @@ export const getRecentlyViewedBoards = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+/**
+ * @desc Gets user's stared boards and display the first 4
+ * @route GET /api/recently-viewed/starred-boards
+ * @access Private
+ */
+
+
+export const getFavoriteBoards = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    // Get top 4 most recently updated favorite boards
+    const favorites = await Board.find({
+      createdBy: userId,
+      isFavorite: true
+    })
+      .sort({ updatedAt: -1 }) // newest favorite first
+      .limit(4);
+
+    return res.status(200).json({
+      success: true,
+      favorites
+    });
+  } catch (error) {
+    console.error("Get favorites error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Could not fetch favorite boards"
+    });
+  }
+};
+
+
+/**
+ * 
+ */
+
+
+export const toggleStarBoard = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { boardId } = req.params;
+
+    if (!boardId) {
+      return res.status(400).json({ success: false, message: "Board ID is required" });
+    }
+
+    // Find the board and make sure it belongs to the user
+    const board = await Board.findOne({ _id: boardId, createdBy: userId });
+
+    if (!board) {
+      return res.status(404).json({ success: false, message: "Board not found" });
+    }
+
+    // Toggle the isFavorite field
+    board.isFavorite = !board.isFavorite;
+    await board.save();
+
+    // Optional: fetch the updated top 4 favorite boards for the user
+    const updatedFavorites = await Board.find({
+      createdBy: userId,
+      isFavorite: true,
+    })
+      .sort({ updatedAt: -1 })
+      .limit(4);
+
+    return res.status(200).json({
+      success: true,
+      message: board.isFavorite ? "Board starred" : "Board unstarred",
+      board,
+      favorites: updatedFavorites,
+    });
+  } catch (error) {
+    console.error("Toggle star error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};

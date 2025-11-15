@@ -9,6 +9,11 @@ export interface IBoard extends Document {
   lists: mongoose.Types.ObjectId[];
   workspace: mongoose.Types.ObjectId;
   isFavorite?: boolean;
+
+
+  // Add timestamps
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const boardSchema = new Schema<IBoard>(
