@@ -138,46 +138,6 @@ export const UpdateBoard = async (req: Request, res: Response) => {
   }
 };
 
-// TOGGLE FAVORITE STATUS OF A BOARD (Authenticated)
-export const toggleFavorite = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { isFavorite } = req.body;
-
-    const board = await Board.findById(id);
-    if (!board) {
-      return res.status(404).json({ message: "Board not found" });
-    }
-
-    // Optional: Check ownership or workspace access if needed
-    // if (board.createdBy.toString() !== req.user?.id) {
-    //   return res.status(403).json({ message: "Unauthorized" });
-    // }
-
-    board.isFavorite = isFavorite;
-    await board.save();
-
-    // Optionally emit socket event if you use real-time updates
-    // const io = req.app.get("io");
-    // if (io && board.workspace) {
-    //   io.to(board.workspace.toString()).emit("boardUpdated", { board });
-    // }
-
-    await logActivity({
-      userId: req.user!.id,
-      workspaceId: board.workspace.toString(),
-      entityType: "Board",
-      entityName: board.title,
-      actionType: isFavorite ? "marked_favorite" : "unmarked_favorite",
-    });
-
-    res.status(200).json({ message: "Board favorite status updated", board });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-};
-
-
 // DELETE BOARD (Authenticated)
 export const DeleteBoard = async (req: Request, res: Response) => {
   try {

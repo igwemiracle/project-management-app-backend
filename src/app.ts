@@ -12,8 +12,7 @@ import workspaceRoutes from "./routes/workspace.routes";
 import activityRoutes from "./routes/activity.routes";
 import accountRoutes from "./routes/account.routes";
 import recentlyViewedBoardRoutes from "./routes/recentlyViewedBoard.routes"
-import path from "path";
-
+import starredBoardRoutes from "./routes/starredBoard.routes";
 connectDB();
 
 const app = express();
@@ -62,6 +61,6 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/workspaces", workspaceRoutes)
 app.use("/api/activity-logs", activityRoutes);
 app.use("/api/recently-viewed", recentlyViewedBoardRoutes);
-
+app.use("/api/starred-boards", starredBoardRoutes);
 
 export default app;
