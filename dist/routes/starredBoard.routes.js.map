@@ -1,0 +1,1 @@
+{"version":3,"file":"starredBoard.routes.js","sourceRoot":"","sources":["../../src/routes/starredBoard.routes.ts"],"names":[],"mappings":";;;;;AAAA,sDAA8B;AAE9B,sEAAmE;AACnE,oFAA2F;AAE3F,MAAM,MAAM,GAAG,iBAAO,CAAC,MAAM,EAAE,CAAC;AAGhC,MAAM,CAAC,KAAK,CAAC,MAAM,EAAE,mCAAgB,EAAE,wCAAc,CAAC,CAAC;AACvD,MAAM,CAAC,GAAG,CAAC,GAAG,EAAE,mCAAgB,EAAE,2CAAiB,CAAC,CAAC;AACrD,kBAAe,MAAM,CAAC"}

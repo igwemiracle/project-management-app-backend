@@ -67,6 +67,7 @@ const userSchema = new mongoose_1.Schema({
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String, default: null },
     verificationExpires: { type: Date, default: null },
+    refreshToken: { type: String, default: null },
 }, { timestamps: true });
 exports.User = mongoose_1.default.model("User", userSchema);
 //# sourceMappingURL=user.model.js.map

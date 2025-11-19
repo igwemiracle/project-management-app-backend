@@ -12,6 +12,5 @@ router.get("/", authenticateUser_1.authenticateUser, board_controller_1.GetBoard
 router.get("/:id", authenticateUser_1.authenticateUser, board_controller_1.GetBoardById);
 router.put("/:id", authenticateUser_1.authenticateUser, board_controller_1.UpdateBoard);
 router.delete("/:id", authenticateUser_1.authenticateUser, board_controller_1.DeleteBoard);
-router.patch("/:id", authenticateUser_1.authenticateUser, board_controller_1.toggleFavorite);
 exports.default = router;
 //# sourceMappingURL=board.routes.js.map

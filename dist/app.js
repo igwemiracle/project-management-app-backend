@@ -17,6 +17,7 @@ const workspace_routes_1 = __importDefault(require("./routes/workspace.routes"))
 const activity_routes_1 = __importDefault(require("./routes/activity.routes"));
 const account_routes_1 = __importDefault(require("./routes/account.routes"));
 const recentlyViewedBoard_routes_1 = __importDefault(require("./routes/recentlyViewedBoard.routes"));
+const starredBoard_routes_1 = __importDefault(require("./routes/starredBoard.routes"));
 (0, db_1.default)();
 const app = (0, express_1.default)();
 // Serve static files from the 'public' folder
@@ -55,5 +56,6 @@ app.use("/api/comments", comment_routes_1.default);
 app.use("/api/workspaces", workspace_routes_1.default);
 app.use("/api/activity-logs", activity_routes_1.default);
 app.use("/api/recently-viewed", recentlyViewedBoard_routes_1.default);
+app.use("/api/starred-boards", starredBoard_routes_1.default);
 exports.default = app;
 //# sourceMappingURL=app.js.map
