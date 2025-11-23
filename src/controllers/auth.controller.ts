@@ -35,8 +35,8 @@ export const RegisterUser = async (req: Request, res: Response) => {
       isVerified: false,
     });
 
-    // const verificationLink = `https://project-management-app-orpin-delta.vercel.app/verify-email?token=${verificationToken}`;
-    const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+    const verificationLink = `https://project-management-app-orpin-delta.vercel.app/verify-email?token=${verificationToken}`;
+    // const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
 
 
     // ✅ Correct template path (works locally + on Render)
